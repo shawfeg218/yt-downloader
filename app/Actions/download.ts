@@ -1,7 +1,7 @@
 "use server";
 
 import ytdl from "ytdl-core";
-import { DownloadParams } from "@/typeing";
+import { DownloadParams } from "@/typing";
 
 // convert node stream to base64
 function streamToBase64(stream: NodeJS.ReadableStream): Promise<string> {
@@ -21,19 +21,29 @@ function streamToBase64(stream: NodeJS.ReadableStream): Promise<string> {
 }
 
 export default async function download(params: DownloadParams) {
-  const { url, quality } = params;
+  const { url, type } = params;
 
   if (!ytdl.validateURL(url)) {
     throw new Error("Invalid URL");
   }
   const info = await ytdl.getInfo(url);
   const title = info.videoDetails.title;
-  console.log(`Downloading: ${title} with quality: ${quality}`);
-  const format = ytdl.chooseFormat(info.formats, { quality: quality });
-  const container = format.container;
-  const stream = ytdl(url, { format: format });
-  // convert stream to base64
-  const StreamBase64 = await streamToBase64(stream);
+  const options: ytdl.chooseFormatOptions =
+    type === "video"
+      ? {
+          filter: "videoandaudio",
+          quality: "highestvideo",
+        }
+      : {
+          filter: "audioonly",
+          quality: "highestaudio",
+        };
 
-  return { StreamBase64, title, container };
+  const format = ytdl.chooseFormat(info.formats, options);
+  const container = format.container;
+  const stream = ytdl(url, options);
+  console.log(`Downloading: ${title}.${container}`);
+  // convert stream to base64
+  const streamBase64 = await streamToBase64(stream);
+  return { streamBase64, title, container };
 }

@@ -1,4 +1,4 @@
 export type DownloadParams = {
   url: string;
-  quality: "highest" | "highestauidio";
+  type: "video" | "audio";
 };
