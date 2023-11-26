@@ -1,30 +1,70 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
+// Server Actions
 import download from "@/app/Actions/download";
-import { useState } from "react";
-import { DownloadParams } from "@/typing";
+
+// FFmpeg
+import loadFfmpeg from "@/utils/load-ffmpeg";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile } from "@ffmpeg/util";
+import { getArgs } from "@/utils/getExecArgs";
+
+import { DownloadParams } from "@/types";
 type Type = DownloadParams["type"];
 
 export default function Downloader() {
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState<string>("");
   const [type, setType] = useState<Type>("video");
-  // const [blobUrl, setBlobUrl] = useState("");
+
+  const ffmpegRef = useRef(new FFmpeg());
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const load = async () => {
+    try {
+      const ffmpeg_response = await loadFfmpeg();
+      ffmpegRef.current = ffmpeg_response;
+      console.log("ffmpeg loaded");
+    } catch (e) {
+      console.log("error loading ffmpeg");
+      console.log(e);
+    }
+  };
 
   const downloadFunc = async () => {
     try {
       const { streamBase64, title, container } = await download({ url, type });
       const buffer = Buffer.from(streamBase64, "base64");
-      // create blob by stream
-      const blob = new Blob([buffer], { type: `${type}/${container}` });
-      if (type === "audio") {
-        // convert blob to mp3 using ffmpeg.wasm
-      }
-      const BlobUrl = URL.createObjectURL(blob);
-      // setBlobUrl(BlobUrl);
+      const originBlob = new Blob([buffer], { type: `${type}/${container}` });
 
+      const outputExtension = type === "video" ? "mp4" : "mp3";
+      const execArgs = getArgs(type, container, outputExtension);
+
+      // conversion
+      const ffmpeg = ffmpegRef.current;
+
+      await ffmpeg.writeFile(`input.${container}`, await fetchFile(originBlob));
+      console.log("ffmpeg wirte file done");
+
+      await ffmpeg.exec(execArgs);
+      console.log("ffmpeg exec done");
+
+      const fileData = await ffmpeg.readFile(`output.${outputExtension}`);
+      console.log("ffmpeg read file done");
+
+      // gernerate converted blob from fileData
+      const data = new Uint8Array(fileData as ArrayBuffer);
+      const convertedBlob = new Blob([data.buffer], { type: `${type}/${outputExtension}` });
+
+      // download in browser
+      const BlobUrl = URL.createObjectURL(convertedBlob);
       const a = document.createElement("a");
       a.href = BlobUrl;
-      a.download = `${title}.${container}`;
+      a.download = type === "video" ? `${title}.mp4` : `${title}.mp3`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -37,7 +77,6 @@ export default function Downloader() {
 
   return (
     <div className="mb-6 space-x-3">
-      {/* {blobUrl !== "" && <video autoPlay controls src={blobUrl} />} */}
       <input
         type="text"
         className="border-2 rounded-md"

@@ -1,24 +1,8 @@
 "use server";
 
 import ytdl from "ytdl-core";
-import { DownloadParams } from "@/typing";
-
-// convert node stream to base64
-function streamToBase64(stream: NodeJS.ReadableStream): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const chunks: Uint8Array[] = [];
-    stream.on("data", (chunk) => {
-      chunks.push(chunk);
-    });
-    stream.on("end", () => {
-      const buffer = Buffer.concat(chunks);
-      resolve(buffer.toString("base64"));
-    });
-    stream.on("error", (err) => {
-      reject(err);
-    });
-  });
-}
+import { DownloadParams } from "@/types";
+import { streamToBase64 } from "@/utils/NodeStreamConvert";
 
 export default async function download(params: DownloadParams) {
   const { url, type } = params;
@@ -40,6 +24,7 @@ export default async function download(params: DownloadParams) {
         };
 
   const format = ytdl.chooseFormat(info.formats, options);
+  // console.log(format);
   const container = format.container;
   const stream = ytdl(url, options);
   console.log(`Downloading: ${title}.${container}`);
