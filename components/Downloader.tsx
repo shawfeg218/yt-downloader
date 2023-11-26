@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import VideoFrame from "./VideoFrame";
 
 // Server Actions
 import download from "@/app/Actions/download";
@@ -76,24 +77,32 @@ export default function Downloader() {
   };
 
   return (
-    <div className="mb-6 space-x-3">
-      <input
-        type="text"
-        className="border-2 rounded-md"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-      />
-      <select value={type} onChange={(e) => setType(e.target.value as Type)}>
-        <option value="video">Video</option>
-        <option value="audio">Audio</option>
-      </select>
-      <button
-        className="bg-black text-white rounded-md p-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled={url === ""}
-        onClick={downloadFunc}
-      >
-        Download
-      </button>
+    <div className="w-full flex justify-center">
+      <div className="w-full flex flex-col items-center">
+        <div className="w-full flex justify-center">
+          <div className="mb-6 space-x-3">
+            <input
+              type="text"
+              className="border-2 rounded-md"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+            <select value={type} onChange={(e) => setType(e.target.value as Type)}>
+              <option value="video">Video</option>
+              <option value="audio">Audio</option>
+            </select>
+            <button
+              className="bg-black text-white rounded-md p-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={url === ""}
+              onClick={downloadFunc}
+            >
+              Download
+            </button>
+          </div>
+        </div>
+        {/* video frame */}
+        <div className="w-full max-w-2xl p-5">{url && <VideoFrame url={url} />}</div>
+      </div>
     </div>
   );
 }

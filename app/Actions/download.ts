@@ -2,7 +2,7 @@
 
 import ytdl from "ytdl-core";
 import { DownloadParams } from "@/types";
-import { streamToBase64 } from "@/utils/NodeStreamConvert";
+import { streamToBase64 } from "@/utils/nodeStreamConvert";
 
 export default async function download(params: DownloadParams) {
   const { url, type } = params;
