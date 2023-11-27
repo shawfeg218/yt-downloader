@@ -7,7 +7,7 @@ export default function VideoFrame({ url }: { url: string }) {
 
   useEffect(() => {
     getEmbedUrl();
-    console.log(url);
+    // console.log(url);
   }, [url]);
 
   const getEmbedUrl = () => {
@@ -15,7 +15,7 @@ export default function VideoFrame({ url }: { url: string }) {
       const videoId = url.split("v=")[1];
       const embedUrl = `https://www.youtube.com/embed/${videoId}`;
       setEmbedUrl(embedUrl);
-      console.log(embedUrl);
+      // console.log(embedUrl);
     } catch (e) {
       console.log(e);
     }

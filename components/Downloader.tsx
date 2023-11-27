@@ -7,55 +7,23 @@ import VideoFrame from "./VideoFrame";
 import download from "@/app/Actions/download";
 
 // FFmpeg
-import loadFfmpeg from "@/utils/load-ffmpeg";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile } from "@ffmpeg/util";
 import { getArgs } from "@/utils/getExecArgs";
 
 import { DownloadParams } from "@/types";
+import convert from "@/utils/convert";
 type Type = DownloadParams["type"];
 
 export default function Downloader() {
   const [url, setUrl] = useState<string>("");
   const [type, setType] = useState<Type>("video");
 
-  const ffmpegRef = useRef(new FFmpeg());
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  const load = async () => {
-    try {
-      const ffmpeg_response = await loadFfmpeg();
-      ffmpegRef.current = ffmpeg_response;
-      console.log("ffmpeg loaded");
-    } catch (e) {
-      console.log("error loading ffmpeg");
-      console.log(e);
-    }
-  };
-
   const downloadFunc = async () => {
     try {
       const { streamBase64, title, container } = await download({ url, type });
-      const buffer = Buffer.from(streamBase64, "base64");
-      const originBlob = new Blob([buffer], { type: `${type}/${container}` });
-
       const outputExtension = type === "video" ? "mp4" : "mp3";
       const execArgs = getArgs(type, container, outputExtension);
 
-      // conversion
-      const ffmpeg = ffmpegRef.current;
-
-      await ffmpeg.writeFile(`input.${container}`, await fetchFile(originBlob));
-      console.log("ffmpeg wirte file done");
-
-      await ffmpeg.exec(execArgs);
-      console.log("ffmpeg exec done");
-
-      const fileData = await ffmpeg.readFile(`output.${outputExtension}`);
-      console.log("ffmpeg read file done");
+      const fileData = await convert(streamBase64, type, container, execArgs, outputExtension);
 
       // gernerate converted blob from fileData
       const data = new Uint8Array(fileData as ArrayBuffer);
@@ -70,9 +38,8 @@ export default function Downloader() {
       a.click();
       a.remove();
       URL.revokeObjectURL(BlobUrl);
-    } catch (e) {
-      console.log("error");
-      console.log(e);
+    } catch (err) {
+      console.log(err);
     }
   };
 
