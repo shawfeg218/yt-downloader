@@ -1,5 +1,7 @@
+import internal from "stream";
+
 // convert node stream to base64
-export async function streamToBase64(stream: NodeJS.ReadableStream): Promise<string> {
+export async function streamToBase64(stream: internal.Readable): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Uint8Array[] = [];
     stream.on("data", (chunk) => {

@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-export default function VideoFrame({ url }: { url: string }) {
+type Props = {
+  url: string;
+};
+
+export default function VideoFrame({ url }: Props) {
   const [embedUrl, setEmbedUrl] = useState<string>("");
 
   useEffect(() => {

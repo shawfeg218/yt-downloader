@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import VideoFrame from "./VideoFrame";
 
 // Server Actions
@@ -8,9 +8,10 @@ import download from "@/app/Actions/download";
 
 // FFmpeg
 import { getArgs } from "@/utils/getExecArgs";
+import convert from "@/utils/convert";
 
 import { DownloadParams } from "@/types";
-import convert from "@/utils/convert";
+import ytdl from "ytdl-core";
 type Type = DownloadParams["type"];
 
 export default function Downloader() {
@@ -18,11 +19,17 @@ export default function Downloader() {
   const [type, setType] = useState<Type>("video");
 
   const downloadFunc = async () => {
+    // check if url is valid
+    if (!ytdl.validateURL(url)) {
+      alert("Invalid URL");
+      return;
+    }
     try {
       const { streamBase64, title, container } = await download({ url, type });
       const outputExtension = type === "video" ? "mp4" : "mp3";
-      const execArgs = getArgs(type, container, outputExtension);
 
+      // file conversion
+      const execArgs = getArgs(type, container, outputExtension);
       const fileData = await convert(streamBase64, type, container, execArgs, outputExtension);
 
       // gernerate converted blob from fileData

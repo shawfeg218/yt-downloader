@@ -2,8 +2,9 @@
 
 import ytdl from "ytdl-core";
 import { DownloadParams } from "@/types";
-import { streamToBase64 } from "@/utils/nodeStreamConvert";
+import { streamToBase64 } from "@/utils/streamConvert";
 
+// download video or audio from youtube
 export default async function download(params: DownloadParams) {
   try {
     const { url, type } = params;
