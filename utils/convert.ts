@@ -24,8 +24,8 @@ export default async function convert(
     console.log("ffmpeg read file done");
 
     return fileData;
-  } catch (e) {
-    console.log();
-    console.log("Error in convert: ", e);
+  } catch (error) {
+    console.log(error);
+    throw new Error(`Error in convert: ${error}`);
   }
 }
