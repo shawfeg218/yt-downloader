@@ -17,8 +17,11 @@ type Type = DownloadParams["type"];
 export default function Downloader() {
   const [url, setUrl] = useState<string>("");
   const [type, setType] = useState<Type>("video");
+  const [downloading, setDownloading] = useState<boolean>(false);
 
   const downloadFunc = async () => {
+    setDownloading(true);
+
     // check if url is valid
     if (!ytdl.validateURL(url)) {
       alert("Invalid URL");
@@ -47,33 +50,41 @@ export default function Downloader() {
       URL.revokeObjectURL(BlobUrl);
     } catch (err) {
       console.log(err);
+      alert("Error in download");
+    } finally {
+      setDownloading(false);
     }
   };
 
   return (
     <div className="w-full flex justify-center">
       <div className="w-full flex flex-col items-center">
-        <div className="w-full flex justify-center">
-          <div className="mb-6 space-x-3">
-            <input
-              type="text"
-              className="border-2 rounded-md"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-            <select value={type} onChange={(e) => setType(e.target.value as Type)}>
-              <option value="video">Video</option>
-              <option value="audio">Audio</option>
-            </select>
-            <button
-              className="bg-black text-white rounded-md p-2 disabled:opacity-40 disabled:cursor-not-allowed"
-              disabled={url === ""}
-              onClick={downloadFunc}
-            >
-              Download
-            </button>
-          </div>
+        {/* download form */}
+        <div className="w-full flex justify-center items-center space-x-3 mb-3">
+          <input
+            type="text"
+            className="border-2 rounded-md"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+          <select value={type} onChange={(e) => setType(e.target.value as Type)}>
+            <option value="video">Video</option>
+            <option value="audio">Audio</option>
+          </select>
+          <button
+            className="bg-black text-white rounded-md p-2 disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={!url || downloading}
+            onClick={downloadFunc}
+          >
+            Download
+          </button>
         </div>
+
+        {/* suspend div */}
+        <div className="h-8 flex justify-center items-center">
+          {downloading && <p className="animate-pulse font-semibold">downloading ...</p>}
+        </div>
+
         {/* video frame */}
         <div className="w-full max-w-2xl p-5">{url && <VideoFrame url={url} />}</div>
       </div>
