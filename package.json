@@ -12,7 +12,6 @@
     "@ffmpeg/core-mt": "0.12.4",
     "@ffmpeg/ffmpeg": "^0.12.6",
     "@ffmpeg/util": "^0.12.1",
-    "axios": "^1.6.2",
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18",
