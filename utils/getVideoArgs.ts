@@ -1,30 +1,23 @@
-export const getVideoArgs = (
-  VideoContainer: string,
-  AudioContainer: string,
-  outputExtension: string
-): string[] => {
-  if (VideoContainer == "mp4") {
-    return [
-      "-i",
-      `inputVideo.${VideoContainer}`,
-      "-i",
-      `inputAudio.${AudioContainer}`,
-      "-c:v",
-      "copy",
-      "-c:a",
-      "aac",
-      `output.${outputExtension}`,
-    ];
-  }
+export default function getVideoArgs(videoContainer: string, audioContainer: string): string[] {
+  let videoCodec = videoContainer === "mp4" ? "copy" : "libx264";
+
   return [
     "-i",
-    `inputVideo.${VideoContainer}`,
+    `inputVideo.${videoContainer}`,
     "-i",
-    `inputAudio.${AudioContainer}`,
+    `inputAudio.${audioContainer}`,
     "-c:v",
-    "libx264",
+    videoCodec,
     "-c:a",
     "aac",
-    `output.${outputExtension}`,
+    "-b:v",
+    "2M",
+    "-b:a",
+    "128k",
+    "-movflags",
+    "+faststart",
+    "-crf",
+    "18",
+    "output.mp4",
   ];
-};
+}

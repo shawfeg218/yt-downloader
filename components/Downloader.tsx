@@ -4,18 +4,17 @@ import { useState } from "react";
 import VideoFrame from "./VideoFrame";
 
 // Server Actions
-// import download from "@/Actions/download";
-import { downloadVideo } from "@/Actions/downloadVideo";
+import downloadAudio from "@/Actions/downloadAudio";
+import downloadVideo from "@/Actions/downloadVideo";
 
 // FFmpeg
-import { getArgs } from "@/utils/getExecArgs";
-import convert from "@/utils/convert";
+import convertAudio from "@/utils/convertAudio";
+import convertVideo from "@/utils/convertVideo";
+import getVideoArgs from "@/utils/getVideoArgs";
+import getAudioArgs from "@/utils/getAudioArgs";
 
-import { DownloadParams } from "@/types";
 import ytdl from "ytdl-core";
-import { getVideoArgs } from "@/utils/getVideoArgs";
-import { convertVideo } from "@/utils/convertVideo";
-type Type = DownloadParams["type"];
+type Type = "video" | "audio";
 
 export default function Downloader() {
   const [url, setUrl] = useState<string>("");
@@ -41,12 +40,10 @@ export default function Downloader() {
 
     try {
       const { audioStreamBase64, audioContainer, title, videoStreamBase64, videoContainer } =
-        await downloadVideo({ url, type });
-
-      const outputExtension = "mp4";
+        await downloadVideo(url);
 
       // file conversion
-      const execArgs = getVideoArgs(videoContainer, audioContainer, outputExtension);
+      const execArgs = getVideoArgs(videoContainer, audioContainer);
       const fileData = await convertVideo(
         videoStreamBase64,
         audioStreamBase64,
@@ -57,7 +54,7 @@ export default function Downloader() {
 
       // gernerate converted blob from fileData
       const data = new Uint8Array(fileData as ArrayBuffer);
-      const convertedBlob = new Blob([data.buffer], { type: `video/${outputExtension}` });
+      const convertedBlob = new Blob([data.buffer], { type: "video/mp4" });
 
       // download in browser
       const BlobUrl = URL.createObjectURL(convertedBlob);
@@ -77,36 +74,38 @@ export default function Downloader() {
   };
 
   const downloadA = async () => {
-    // setDownloading(true);
-    // // check if url is valid
-    // if (!ytdl.validateURL(url)) {
-    //   alert("Invalid URL");
-    //   return;
-    // }
-    // try {
-    //   const { streamBase64, title, container } = await download({ url, type });
-    //   const outputExtension = "mp3";
-    //   // file conversion
-    //   const execArgs = getArgs(type, container, outputExtension);
-    //   const fileData = await convert(streamBase64, type, container, execArgs, outputExtension);
-    //   // gernerate converted blob from fileData
-    //   const data = new Uint8Array(fileData as ArrayBuffer);
-    //   const convertedBlob = new Blob([data.buffer], { type: `${type}/${outputExtension}` });
-    //   // download in browser
-    //   const BlobUrl = URL.createObjectURL(convertedBlob);
-    //   const a = document.createElement("a");
-    //   a.href = BlobUrl;
-    //   a.download = `${title}.mp3`;
-    //   document.body.appendChild(a);
-    //   a.click();
-    //   a.remove();
-    //   URL.revokeObjectURL(BlobUrl);
-    // } catch (err) {
-    //   console.log(err);
-    //   alert("Error in download");
-    // } finally {
-    //   setDownloading(false);
-    // }
+    setDownloading(true);
+    // check if url is valid
+    if (!ytdl.validateURL(url)) {
+      alert("Invalid URL");
+      return;
+    }
+    try {
+      const { streamBase64, title, container } = await downloadAudio(url);
+      const outputExtension = "mp3";
+      // file conversion
+      const execArgs = getAudioArgs(container, outputExtension);
+      const fileData = await convertAudio(streamBase64, container, execArgs, outputExtension);
+
+      // gernerate converted blob from fileData
+      const data = new Uint8Array(fileData as ArrayBuffer);
+      const convertedBlob = new Blob([data.buffer], { type: `audio/${outputExtension}` });
+
+      // download in browser
+      const BlobUrl = URL.createObjectURL(convertedBlob);
+      const a = document.createElement("a");
+      a.href = BlobUrl;
+      a.download = `${title}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(BlobUrl);
+    } catch (err) {
+      console.log(err);
+      alert("Error in download");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (

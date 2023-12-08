@@ -1,36 +1,42 @@
 "use server";
 
 import ytdl from "ytdl-core";
-import { DownloadParams } from "@/types";
 import { streamToBase64 } from "@/utils/streamConvert";
 
-// download video or audio from youtube
-export async function downloadVideo(params: DownloadParams) {
+// download video from youtube
+export default async function downloadVideo(url: string) {
   try {
-    const { url, type } = params;
-
     if (!ytdl.validateURL(url)) {
       throw new Error("Invalid URL");
     }
     const info = await ytdl.getInfo(url);
     const title = info.videoDetails.title;
 
+    // choose audio format
     const audioOptions: ytdl.chooseFormatOptions = {
       filter: "audioonly",
       quality: "highestaudio",
     };
     const audioFormat = ytdl.chooseFormat(info.formats, audioOptions);
     console.log("Audio quality: ", audioFormat.audioQuality);
+    console.log("Audio bitrate: ", audioFormat.audioBitrate);
     const audioContainer = audioFormat.container;
 
+    // choose video format
     const videoOptions: ytdl.chooseFormatOptions = {
-      filter: "videoonly",
+      filter: (format) => {
+        return !format.hasAudio && format.qualityLabel
+          ? parseInt(format.qualityLabel.split("p")[0]) <= 1080
+          : false;
+      },
       quality: "highestvideo",
     };
     const videoFormat = ytdl.chooseFormat(info.formats, videoOptions);
     console.log("Video quality: ", videoFormat.qualityLabel);
+    console.log("Has audio: ", videoFormat.hasAudio);
     const videoContainer = videoFormat.container;
 
+    // download audio and video
     const audioStream = ytdl(url, audioOptions);
     console.log(`Audio downloading: ${title}.${audioContainer}`);
 

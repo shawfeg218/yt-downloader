@@ -1,9 +1,8 @@
 import { fetchFile } from "@ffmpeg/util";
 import loadFfmpeg from "./load-ffmpeg";
 
-export default async function convert(
+export default async function convertAudio(
   streamBase64: string,
-  type: string,
   container: string,
   execArgs: string[],
   outputExtension: string
@@ -13,7 +12,7 @@ export default async function convert(
 
     // generate file that fetchFile can read
     const buffer = Buffer.from(streamBase64, "base64");
-    const originBlob = new Blob([buffer], { type: `${type}/${container}` });
+    const originBlob = new Blob([buffer], { type: `audio/${container}` });
 
     await Ffmpeg.writeFile(`input.${container}`, await fetchFile(originBlob));
     console.log("ffmpeg wirte file done");

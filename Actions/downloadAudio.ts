@@ -1,14 +1,11 @@
 "use server";
 
 import ytdl from "ytdl-core";
-import { DownloadParams } from "@/types";
 import { streamToBase64 } from "@/utils/streamConvert";
 
-// download video or audio from youtube
-export default async function download(params: DownloadParams) {
+// download audio from youtube
+export default async function downloadAudio(url: string) {
   try {
-    const { url, type } = params;
-
     if (!ytdl.validateURL(url)) {
       throw new Error("Invalid URL");
     }
@@ -20,7 +17,7 @@ export default async function download(params: DownloadParams) {
     };
 
     const format = ytdl.chooseFormat(info.formats, options);
-    console.log(format);
+    console.log("Audio quality: ", format.audioQuality);
     const container = format.container;
     const stream = ytdl(url, options);
     console.log(`Downloading: ${title}.${container}`);
