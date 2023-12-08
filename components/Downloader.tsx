@@ -4,7 +4,8 @@ import { useState } from "react";
 import VideoFrame from "./VideoFrame";
 
 // Server Actions
-import download from "@/app/Actions/download";
+// import download from "@/Actions/download";
+import { downloadVideo } from "@/Actions/downloadVideo";
 
 // FFmpeg
 import { getArgs } from "@/utils/getExecArgs";
@@ -12,6 +13,8 @@ import convert from "@/utils/convert";
 
 import { DownloadParams } from "@/types";
 import ytdl from "ytdl-core";
+import { getVideoArgs } from "@/utils/getVideoArgs";
+import { convertVideo } from "@/utils/convertVideo";
 type Type = DownloadParams["type"];
 
 export default function Downloader() {
@@ -19,7 +22,15 @@ export default function Downloader() {
   const [type, setType] = useState<Type>("video");
   const [downloading, setDownloading] = useState<boolean>(false);
 
-  const downloadFunc = async () => {
+  const downloadhandler = () => {
+    if (type === "video") {
+      downloadV();
+    } else {
+      downloadA();
+    }
+  };
+
+  const downloadV = async () => {
     setDownloading(true);
 
     // check if url is valid
@@ -27,23 +38,32 @@ export default function Downloader() {
       alert("Invalid URL");
       return;
     }
+
     try {
-      const { streamBase64, title, container } = await download({ url, type });
-      const outputExtension = type === "video" ? "mp4" : "mp3";
+      const { audioStreamBase64, audioContainer, title, videoStreamBase64, videoContainer } =
+        await downloadVideo({ url, type });
+
+      const outputExtension = "mp4";
 
       // file conversion
-      const execArgs = getArgs(type, container, outputExtension);
-      const fileData = await convert(streamBase64, type, container, execArgs, outputExtension);
+      const execArgs = getVideoArgs(videoContainer, audioContainer, outputExtension);
+      const fileData = await convertVideo(
+        videoStreamBase64,
+        audioStreamBase64,
+        videoContainer,
+        audioContainer,
+        execArgs
+      );
 
       // gernerate converted blob from fileData
       const data = new Uint8Array(fileData as ArrayBuffer);
-      const convertedBlob = new Blob([data.buffer], { type: `${type}/${outputExtension}` });
+      const convertedBlob = new Blob([data.buffer], { type: `video/${outputExtension}` });
 
       // download in browser
       const BlobUrl = URL.createObjectURL(convertedBlob);
       const a = document.createElement("a");
       a.href = BlobUrl;
-      a.download = type === "video" ? `${title}.mp4` : `${title}.mp3`;
+      a.download = `${title}.mp4`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -54,6 +74,39 @@ export default function Downloader() {
     } finally {
       setDownloading(false);
     }
+  };
+
+  const downloadA = async () => {
+    // setDownloading(true);
+    // // check if url is valid
+    // if (!ytdl.validateURL(url)) {
+    //   alert("Invalid URL");
+    //   return;
+    // }
+    // try {
+    //   const { streamBase64, title, container } = await download({ url, type });
+    //   const outputExtension = "mp3";
+    //   // file conversion
+    //   const execArgs = getArgs(type, container, outputExtension);
+    //   const fileData = await convert(streamBase64, type, container, execArgs, outputExtension);
+    //   // gernerate converted blob from fileData
+    //   const data = new Uint8Array(fileData as ArrayBuffer);
+    //   const convertedBlob = new Blob([data.buffer], { type: `${type}/${outputExtension}` });
+    //   // download in browser
+    //   const BlobUrl = URL.createObjectURL(convertedBlob);
+    //   const a = document.createElement("a");
+    //   a.href = BlobUrl;
+    //   a.download = `${title}.mp3`;
+    //   document.body.appendChild(a);
+    //   a.click();
+    //   a.remove();
+    //   URL.revokeObjectURL(BlobUrl);
+    // } catch (err) {
+    //   console.log(err);
+    //   alert("Error in download");
+    // } finally {
+    //   setDownloading(false);
+    // }
   };
 
   return (
@@ -74,7 +127,7 @@ export default function Downloader() {
           <button
             className="bg-black text-white rounded-md p-2 disabled:opacity-40 disabled:cursor-not-allowed"
             disabled={!url || downloading}
-            onClick={downloadFunc}
+            onClick={downloadhandler}
           >
             Download
           </button>

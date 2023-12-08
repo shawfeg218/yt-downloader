@@ -14,19 +14,13 @@ export default async function download(params: DownloadParams) {
     }
     const info = await ytdl.getInfo(url);
     const title = info.videoDetails.title;
-    const options: ytdl.chooseFormatOptions =
-      type === "video"
-        ? {
-            filter: "videoandaudio",
-            quality: "highestvideo",
-          }
-        : {
-            filter: "audioonly",
-            quality: "highestaudio",
-          };
+    const options: ytdl.chooseFormatOptions = {
+      filter: "audioonly",
+      quality: "highestaudio",
+    };
 
     const format = ytdl.chooseFormat(info.formats, options);
-    // console.log(format);
+    console.log(format);
     const container = format.container;
     const stream = ytdl(url, options);
     console.log(`Downloading: ${title}.${container}`);

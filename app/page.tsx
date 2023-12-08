@@ -8,7 +8,6 @@ export default function Home() {
         Downloader
       </h1>
 
-      {/* downloader */}
       <Downloader />
     </div>
   );
