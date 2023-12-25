@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/Header";
+import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
   title: "YT Downloader",
@@ -19,6 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           disableTransitionOnChange
         >
           <Header />
+          <Sidebar />
+
           {children}
         </ThemeProvider>
       </body>
