@@ -8,12 +8,14 @@ import downloadAudio from "@/Actions/downloadAudio";
 import downloadVideo from "@/Actions/downloadVideo";
 
 // FFmpeg
-import convertAudio from "@/utils/convertAudio";
-import convertVideo from "@/utils/convertVideo";
-import getVideoArgs from "@/utils/getVideoArgs";
-import getAudioArgs from "@/utils/getAudioArgs";
+import convertAudio from "@/lib/convertAudio";
+import convertVideo from "@/lib/convertVideo";
+import getVideoArgs from "@/lib/getVideoArgs";
+import getAudioArgs from "@/lib/getAudioArgs";
 
 import ytdl from "ytdl-core";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
 type Type = "video" | "audio";
 
 export default function Downloader() {
@@ -112,24 +114,19 @@ export default function Downloader() {
     <div className="w-full flex justify-center">
       <div className="w-full flex flex-col items-center">
         {/* download form */}
-        <div className="w-full flex justify-center items-center space-x-3 mb-3">
-          <input
-            type="text"
-            className="border-2 rounded-md"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-          <select value={type} onChange={(e) => setType(e.target.value as Type)}>
+        <div className="w-full max-w-xl flex justify-center items-center space-x-3 mb-3">
+          <Input placeholder="Video Url" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <select
+            className="p-2 rounded-md"
+            value={type}
+            onChange={(e) => setType(e.target.value as Type)}
+          >
             <option value="video">Video</option>
             <option value="audio">Audio</option>
           </select>
-          <button
-            className="bg-black text-white rounded-md p-2 disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled={!url || downloading}
-            onClick={downloadhandler}
-          >
+          <Button disabled={!url || downloading} onClick={downloadhandler}>
             Download
-          </button>
+          </Button>
         </div>
 
         {/* suspend div */}

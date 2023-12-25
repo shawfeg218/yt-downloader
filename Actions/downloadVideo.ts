@@ -1,7 +1,7 @@
 "use server";
 
 import ytdl from "ytdl-core";
-import { streamToBase64 } from "@/utils/streamConvert";
+import { streamToBase64 } from "@/lib/streamConvert";
 
 // download video from youtube
 export default async function downloadVideo(url: string) {
